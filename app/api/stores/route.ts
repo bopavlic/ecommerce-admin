@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(store, { status: 201 });
   } catch (error) {
-    console.log('[STORES ROUTE ERROR]:', error);
+    console.log('[STORES POST ROUTE ERROR]:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
