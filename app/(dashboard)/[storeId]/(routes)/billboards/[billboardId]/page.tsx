@@ -1,8 +1,8 @@
 import prismadb from '@/lib/prismadb';
-import React from 'react';
-import BillboardForm from './_components/billboard-form';
 
-const BillBoardPage = async ({
+import { BillboardForm } from './components/billboard-form';
+
+const BillboardPage = async ({
   params,
 }: {
   params: { billboardId: string };
@@ -22,4 +22,4 @@ const BillBoardPage = async ({
   );
 };
 
-export default BillBoardPage;
+export default BillboardPage;

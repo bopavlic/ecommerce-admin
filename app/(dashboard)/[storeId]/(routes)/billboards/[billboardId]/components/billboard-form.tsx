@@ -1,18 +1,17 @@
 'use client';
 
+import * as z from 'zod';
+import axios from 'axios';
 import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
 import { Trash } from 'lucide-react';
 import { Billboard } from '@prisma/client';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import toast from 'react-hot-toast';
-import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
-import * as z from 'zod';
 
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Heading } from '@/components/ui/heading';
-import { Separator } from '@/components/ui/separator';
 import {
   Form,
   FormControl,
@@ -21,13 +20,14 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Heading } from '@/components/ui/heading';
 import { AlertModal } from '@/components/modals/alert-modal';
-import { ImageUpload } from '@/components/ui/image-upload';
+import ImageUpload from '@/components/ui/image-upload';
 
 const formSchema = z.object({
-  label: z.string().min(1, 'Label is required'),
-  imageUrl: z.string().min(1, 'Image URL is required'),
+  label: z.string().min(1),
+  imageUrl: z.string().min(1),
 });
 
 type BillboardFormValues = z.infer<typeof formSchema>;
@@ -36,7 +36,9 @@ interface BillboardFormProps {
   initialData: Billboard | null;
 }
 
-const BillboardForm: React.FC<BillboardFormProps> = ({ initialData }) => {
+export const BillboardForm: React.FC<BillboardFormProps> = ({
+  initialData,
+}) => {
   const params = useParams();
   const router = useRouter();
 
@@ -44,8 +46,10 @@ const BillboardForm: React.FC<BillboardFormProps> = ({ initialData }) => {
   const [loading, setLoading] = useState(false);
 
   const title = initialData ? 'Edit billboard' : 'Create billboard';
-  const description = initialData ? 'Edit a billboard' : 'Add a new Billboard';
-  const toastMessage = initialData ? 'Billboard updated' : 'Billboard created';
+  const description = initialData ? 'Edit a billboard.' : 'Add a new billboard';
+  const toastMessage = initialData
+    ? 'Billboard updated.'
+    : 'Billboard created.';
   const action = initialData ? 'Save changes' : 'Create';
 
   const form = useForm<BillboardFormValues>({
@@ -85,10 +89,10 @@ const BillboardForm: React.FC<BillboardFormProps> = ({ initialData }) => {
       );
       router.refresh();
       router.push(`/${params.storeId}/billboards`);
-      toast.success('Store deleted.');
-    } catch (error) {
+      toast.success('Billboard deleted.');
+    } catch (error: any) {
       toast.error(
-        'Make sure you removed all categories before deleting the billboard.'
+        'Make sure you removed all categories using this billboard first.'
       );
     } finally {
       setLoading(false);
@@ -110,7 +114,7 @@ const BillboardForm: React.FC<BillboardFormProps> = ({ initialData }) => {
           <Button
             disabled={loading}
             variant='destructive'
-            size='icon'
+            size='sm'
             onClick={() => setOpen(true)}
           >
             <Trash className='h-4 w-4' />
@@ -118,7 +122,6 @@ const BillboardForm: React.FC<BillboardFormProps> = ({ initialData }) => {
         )}
       </div>
       <Separator />
-
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -142,7 +145,7 @@ const BillboardForm: React.FC<BillboardFormProps> = ({ initialData }) => {
               </FormItem>
             )}
           />
-          <div className='grid grid-cols-3 gap-8'>
+          <div className='md:grid md:grid-cols-3 gap-8'>
             <FormField
               control={form.control}
               name='label'
@@ -151,9 +154,9 @@ const BillboardForm: React.FC<BillboardFormProps> = ({ initialData }) => {
                   <FormLabel>Label</FormLabel>
                   <FormControl>
                     <Input
-                      {...field}
                       disabled={loading}
                       placeholder='Billboard label'
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -161,14 +164,11 @@ const BillboardForm: React.FC<BillboardFormProps> = ({ initialData }) => {
               )}
             />
           </div>
-          <Button type='submit' disabled={loading} className='ml-auto'>
+          <Button disabled={loading} className='ml-auto' type='submit'>
             {action}
           </Button>
         </form>
       </Form>
-      <Separator />
     </>
   );
 };
-
-export default BillboardForm;
