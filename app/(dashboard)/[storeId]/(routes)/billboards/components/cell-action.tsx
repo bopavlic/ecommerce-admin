@@ -1,22 +1,22 @@
 'use client';
 
+import axios from 'axios';
+import { useState } from 'react';
+import { Copy, Edit, MoreHorizontal, Trash } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { useParams, useRouter } from 'next/navigation';
+
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AlertModal } from '@/components/modals/alert-modal';
 
 import { BillboardColumn } from './columns';
-import { Button } from '@/components/ui/button';
-import { Copy, Edit, MoreHorizontal, Trash } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { useParams, useRouter } from 'next/navigation';
-import axios from 'axios';
-import { useState } from 'react';
-import { AlertModal } from '@/components/modals/alert-modal';
 
 interface CellActionProps {
   data: BillboardColumn;
@@ -25,29 +25,28 @@ interface CellActionProps {
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const router = useRouter();
   const params = useParams();
-
-  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const onCopy = (id: string) => {
-    navigator.clipboard.writeText(id);
-    toast.success('Billboard ID copied to clipboard');
-  };
-
-  const onDelete = async () => {
+  const onConfirm = async () => {
     try {
       setLoading(true);
       await axios.delete(`/api/${params.storeId}/billboards/${data.id}`);
+      toast.success('Billboard deleted.');
       router.refresh();
-      toast.success('Store deleted.');
     } catch (error) {
       toast.error(
-        'Make sure you removed all categories before deleting the billboard.'
+        'Make sure you removed all categories using this billboard first.'
       );
     } finally {
-      setLoading(false);
       setOpen(false);
+      setLoading(false);
     }
+  };
+
+  const onCopy = (id: string) => {
+    navigator.clipboard.writeText(id);
+    toast.success('Billboard ID copied to clipboard.');
   };
 
   return (
@@ -55,8 +54,8 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
       <AlertModal
         isOpen={open}
         onClose={() => setOpen(false)}
+        onConfirm={onConfirm}
         loading={loading}
-        onConfirm={onDelete}
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -67,29 +66,18 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end'>
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className='cursor-pointer'
-            onClick={() => {
-              router.push(`/${params.storeId}/billboards/${data.id}`);
-            }}
-          >
-            <Edit className='mr-2 h-4 w-4' />
-            Update
+          <DropdownMenuItem onClick={() => onCopy(data.id)}>
+            <Copy className='mr-2 h-4 w-4' /> Copy Id
           </DropdownMenuItem>
           <DropdownMenuItem
-            className='cursor-pointer'
-            onClick={() => onCopy(data.id)}
+            onClick={() =>
+              router.push(`/${params.storeId}/billboards/${data.id}`)
+            }
           >
-            <Copy className='mr-2 h-4 w-4' />
-            Copy ID
+            <Edit className='mr-2 h-4 w-4' /> Update
           </DropdownMenuItem>
-          <DropdownMenuItem
-            className='cursor-pointer'
-            onClick={() => setOpen(true)}
-          >
-            <Trash className='mr-2 h-4 w-4' />
-            Delete
+          <DropdownMenuItem onClick={() => setOpen(true)}>
+            <Trash className='mr-2 h-4 w-4' /> Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
